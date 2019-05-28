@@ -20,7 +20,8 @@
         </div>
         <div class="box-body">
             <el-table :data="users" stripe>
-                <el-table-column min-width="120" label="用户名" prop="name"></el-table-column>
+                <el-table-column min-width="120" label="用户名" prop="username"></el-table-column>
+                <el-table-column min-width="120" label="角色" prop="role"></el-table-column>
 				<el-table-column width="230" label="操作" fixed="right">
                     <template slot-scope="scope">
                         <div class="btn-group">
@@ -89,12 +90,18 @@ export default {
     },
     methods: {
         load() {
-            $.get("/user/list", {
+            $.get("/api/v1/users", {
                 q: this.q,
                 start: (this.currentPage - 1) * this.pageSize,
                 limit: this.pageSize
             }).then(data => {
                 this.total = data.total;
+                // let rows = data.rows;
+                // let names = [];
+                // for(let i = 0; i < rows.length; i++){
+                //     names.push(rows[i].username);
+                // }
+                // console.log(names);
                 this.users = data.rows;
             })
         },
@@ -108,8 +115,8 @@ export default {
             }).catch(() => {})
         },
         resetPwd(row) {
-            this.$confirm(`确认要重置用户 ${row.name} 登录密码为默认密码 ${this.defaultPwd} 吗?`, '提示').then(() => {
-                $.get('/user/resetPwd', {
+            this.$confirm(`确认要重置用户 ${row.username} 登录密码为默认密码 ${this.defaultPwd} 吗?`, '提示').then(() => {
+                $.get('/api/v1/resetpassword', {
                     id: row.id
                 }).then(data => {
                     this.$message({

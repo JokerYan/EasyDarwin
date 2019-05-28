@@ -67,16 +67,15 @@ export default {
                 $(`[name=${e.field}]`).focus();
                 return;
             }
-            $.get('/user/modify-password', {
+            $.get('/api/v1/modifypassword', {
                 oldPassword: this.md5(this.form.oldPassword),
-                newPassword: this.md5(this.form.newPassword),
-                newPassword2: this.md5(this.form.newPassword2)
+                newPassword: this.md5(this.form.newPassword)
             }).then(data => {
                 this.$refs['dlg'].hide();
                 this.$alert("密码修改成功,即将重新登录!", "提示").then(() => {
-                    window.location.href = '/logout';
+                    window.location.href = '/api/v1/logout';
                 }).catch(() => {
-                    window.location.href = '/logout';
+                    window.location.href = '/api/v1/logout';
                 })                
             })
         },

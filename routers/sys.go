@@ -76,8 +76,8 @@ func init() {
 
 func (h *APIHandler) ModifyPassword(c *gin.Context) {
 	type Form struct {
-		OldPassword string `form:"oldpassword" binding:"required"`
-		NewPassword string `form:"newpassword" binding:"required"`
+		OldPassword string `form:"oldPassword" binding:"required"`
+		NewPassword string `form:"newPassword" binding:"required"`
 	}
 	var form Form
 	if err := c.Bind(&form); err != nil {
@@ -85,7 +85,8 @@ func (h *APIHandler) ModifyPassword(c *gin.Context) {
 	}
 	sess := sessions.Default(c)
 	var user models.User
-	db.SQLite.First(&user, sess.Get("uid"))
+	var uid = sess.Get("uid").(string)
+	db.SQLite.Where(&models.User{ID: uid}).First(&user)
 	if user.ID != "" && strings.EqualFold(form.OldPassword, user.Password) {
 		db.SQLite.Model(&user).Update("password", form.NewPassword)
 	} else {
@@ -96,6 +97,34 @@ func (h *APIHandler) ModifyPassword(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{
 		"token": token,
 	})
+}
+
+func (h *APIHandler) GetAllUserInfo(c *gin.Context){
+	form := utils.NewPageForm()
+	users := make([]*models.User, 0)
+	db.SQLite.Find(&users)
+	// for _, pusher := range rtsp.Instance.GetPushers() {
+	// 	for _, player := range pusher.GetPlayers() {
+	// 		players = append(players, player)
+	// 	}
+	// }
+	_users := make([]interface{}, 0)
+	for i := 0; i < len(users); i++ {
+		user := users[i]
+		_users = append(_users, map[string]interface{}{
+			"id":      	user.ID,
+			"username":	user.Username,
+			"role":		user.Role,
+			"reserve1":	user.Reserve1,
+			"reserve2":	user.Reserve2,
+		})
+	}
+	ur := utils.NewPageResult(_users)
+	if form.Sort != "" {
+		ur.Sort(form.Sort, form.Order)
+	}
+	ur.Slice(form.Start, form.Limit)
+	c.IndentedJSON(200, ur)
 }
 
 /**
